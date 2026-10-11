@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Tai's Study Room Finder helps SJSU students find potential study spaces by browsing gaps in classroom schedules.">
+  <title>Tai's Study Room Finder</title>
+  <script>try { const theme = localStorage.getItem('study-room-theme'); if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme; } catch {}</script>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <dialog id="welcome-notice" class="welcome-notice" aria-labelledby="welcome-title" aria-describedby="welcome-description">
+    <p class="eyebrow">A QUICK NOTE</p>
+    <h2 id="welcome-title">Before you use Tai's Study Room Finder</h2>
+    <div id="welcome-description">
+      <p><strong>This is a student project, not an official SJSU website.</strong> It is not affiliated with or endorsed by San José State University.</p>
+      <p><strong>No scheduled class does not guarantee classroom access.</strong> A room may be locked, reserved, occupied, or restricted. A gap in the schedule does not mean students are permitted to study there.</p>
+      <p>This site uses a schedule snapshot that may omit classes, events, exams, and closures. Confirm room access and follow university rules before studying.</p>
+    </div>
+    <form method="dialog"><button class="notice-dismiss" autofocus>I understand</button></form>
+  </dialog>
+  <header class="site-header">
+    <a class="brand" href="./"><span class="brand-mark" aria-hidden="true">T</span><span>Tai's Study Room Finder<small>FOR SJSU STUDENTS</small></span></a>
+    <div class="header-actions"><span class="term" id="term">Fall 2026</span><button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to light theme">☀ <span>Light theme</span></button></div>
+  </header>
+  <main>
+    <section class="intro"><p class="eyebrow">SPACE TO FOCUS</p><h1>Your day. <em>Your study spot.</em></h1><p>Browse the schedule to see the gaps between classes. Pick a building and day—the schedule updates automatically.</p></section>
+    <section class="about" aria-labelledby="about-title">
+      <h2 id="about-title">Why I made this</h2>
+      <p>I made this because library study rooms always seem to be booked, and the <a href="https://sjlibrary.org/policies-procedures/reservable-spaces" target="_blank" rel="noopener noreferrer">two-hour daily booking limit</a> can make longer study sessions difficult. Meanwhile, many classrooms have gaps between classes. Tai's Study Room Finder helps students spot those gaps and find potential places to study.</p>
+    </section>
+    <section class="toolbar" aria-label="Schedule filters">
+      <label class="building-field">Building<select id="building" disabled><option>Loading…</option></select></label>
+      <label class="day-field">Day<input id="date" type="date" required disabled></label>
+      <div class="day-nav" aria-label="Change day"><button id="previous-day" type="button" aria-label="Previous day" disabled>←</button><button id="next-day" type="button" aria-label="Next day" disabled>→</button></div>
+      <label class="room-filter">Room<input id="room-filter" type="search" placeholder="Filter rooms, e.g. 301" disabled></label>
+      <button id="filter-toggle" class="filter-toggle" type="button" aria-expanded="false" aria-controls="filter-panel" disabled>Filters <span id="filter-count" hidden>0</span><span aria-hidden="true" class="filter-chevron">⌄</span></button>
+    </section>
+    <section id="filter-panel" class="filter-panel" aria-labelledby="filter-panel-title" hidden>
+      <div class="filter-panel-heading"><h2 id="filter-panel-title">More filters</h2><button id="reset-extra-filters" type="button" disabled>Reset filters</button></div>
+      <div class="filter-grid">
+        <div class="time-filter"><label for="time-choice">Free at <span class="optional">(optional)</span></label><div class="time-control"><select id="time-choice" aria-describedby="time-filter-hint" disabled><option value="">Any time · All rooms</option></select><button id="clear-time" type="button" disabled>Clear</button></div><div id="custom-time-control" class="custom-time-control" hidden><label for="time-filter">Exact time</label><input id="time-filter" type="time" min="07:00" max="22:30" step="60" aria-describedby="time-filter-hint" disabled></div><p id="time-filter-hint" class="filter-hint">Only show rooms with no scheduled class at this time. Choose “Any time” to remove this filter.</p></div>
+        <div class="floor-filter"><label for="floor-filter">Floor <span class="optional">(optional)</span></label><select id="floor-filter" aria-describedby="floor-filter-hint" disabled><option value="">All floors</option></select><p id="floor-filter-hint" class="filter-hint">Based on the first digit of three-digit room numbers (301 → Floor 3). Options update with your building.</p></div>
+      </div>
+    </section>
+    <p id="data-status" class="data-status" role="status">Loading your classroom schedule…</p>
+    <p id="error" class="error" role="alert" hidden></p>
+    <section id="schedule-section" class="schedule-section" aria-labelledby="schedule-title" hidden>
+      <div class="schedule-heading"><div><h2 id="schedule-title">Daily schedule</h2><p id="schedule-summary"></p></div><div class="legend"><span><i class="later-key"></i>Gap under 1 hour</span><span><i class="free-key"></i>Other class-free time</span><span><i class="busy-key"></i>Class scheduled</span></div></div>
+      <p class="timeline-hint">7 AM–10:30 PM · Pacific time. Amber marks gaps between classes shorter than 1 hour. Other class-free time is green. Select a block or gap for details.</p>
+      <div id="schedule-scroll" class="schedule-scroll" tabindex="0" role="region" aria-label="Room schedule; scroll horizontally to browse hours">
+        <div id="timeline" class="timeline" role="table" aria-label="Daily classroom schedule"></div>
+      </div>
+      <div id="empty" class="empty" hidden><h3>No matching rooms</h3><p>Try another building or room code, or adjust the time and floor under Filters.</p></div>
+      <aside id="details" class="details" aria-labelledby="details-title" hidden><div class="details-heading"><h3 id="details-title"></h3><button id="close-details" type="button" aria-label="Close schedule details">×</button></div><div id="details-content"></div></aside>
+      <p id="announcement" class="sr-only" role="status" aria-live="polite"></p>
+    </section>
+    <aside class="notice"><span aria-hidden="true">i</span><p><strong>A gap in the schedule doesn’t confirm access.</strong> Rooms may be locked, reserved, or restricted. This snapshot may omit classes, events, exams, and closures. Confirm access before studying.</p></aside>
+    <footer><span>Student project · Not an official SJSU service</span><a href="https://sjsu.edu/classes/schedules/fall-2026.php" target="_blank" rel="noopener noreferrer">Source class schedule ↗</a><span id="dataset-summary">Static schedule snapshot</span></footer>
+  </main>
+</body>
+</html>
